@@ -2,6 +2,10 @@
 
 This is a production-ready, asynchronous backend for the Enterprise Sales Intelligence Platform. The platform uses a cooperative multi-agent system powered by **CrewAI** and **LangGraph** to automate corporate lead discovery, company research, qualification, outreach draft generation, and human review processes.
 
+## Platform Architecture
+
+![Platform Architecture](sales_platform_architecture_1781297650603.png)
+
 ## Tech Stack
 
 - **Python 3.12**

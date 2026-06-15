@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "-r requirements.txt"
+  ],
+  "graphs": {
+    "workflow": "./app/graph/workflow.py:app_workflow"
+  },
+  "env": ".env"
+}

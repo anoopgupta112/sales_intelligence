@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Architecture & Flow Documentation</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'dark',
+        themeVariables: {
+          background: '#0d1117',
+          primaryColor: '#3b82f6',
+          primaryTextColor: '#f3f4f6',
+          lineColor: '#3b82f6',
+          secondaryColor: '#1f2937',
+          tertiaryColor: '#111827'
+        }
+      });
+    });
+  </script>
+  <style>
+    /* Documentation Specific Styles */
+    .docs-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 2.5rem;
+      margin-top: 1rem;
+    }
+    @media (max-width: 900px) {
+      .docs-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    .docs-nav {
+      position: sticky;
+      top: 2rem;
+      height: fit-content;
+    }
+    .docs-nav-link {
+      display: block;
+      padding: 0.75rem 1rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      margin-bottom: 0.5rem;
+      border: 1px solid transparent;
+    }
+    .docs-nav-link:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-primary);
+    }
+    .docs-nav-link.active {
+      background: rgba(59, 130, 246, 0.08);
+      color: var(--color-primary);
+      border-color: rgba(59, 130, 246, 0.2);
+    }
+    
+    /* Show all sections vertically on the documentation page */
+    .tab-pane {
+      display: block !important;
+      margin-bottom: 4rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 3rem;
+    }
+    .tab-pane:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+    
+    /* Interactive Flowchart Styles */
+    .flowchart-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 2rem 0;
+      position: relative;
+    }
+    .flow-connector {
+      width: 2px;
+      height: 30px;
+      background: linear-gradient(to bottom, var(--color-primary), var(--color-accent));
+      position: relative;
+    }
+    .flow-connector::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: -3px;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid var(--color-accent);
+      border-bottom: 2px solid var(--color-accent);
+      transform: rotate(45deg);
+    }
+    
+    .flow-node {
+      background: rgba(17, 24, 39, 0.85);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 100%;
+      transition: all 0.3s ease;
+      position: relative;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      box-sizing: border-box;
+    }
+    .flow-node:hover {
+      transform: translateY(-2px);
+      border-color: var(--color-primary);
+      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15);
+    }
+    
+    .mermaid {
+      background: #090d16;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-top: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    .mermaid svg {
+      max-width: 100% !important;
+      height: auto !important;
+      min-height: 180px;
+    }
+    
+    /* Mermaid text enhancement */
+    .mermaid g.node text, .mermaid .node label {
+      font-size: 13px !important;
+      font-family: var(--font-body), sans-serif !important;
+      font-weight: 600 !important;
+    }
+    .mermaid g.edgeLabel text, .mermaid .edgeLabel text {
+      font-size: 11px !important;
+      font-family: var(--font-body), sans-serif !important;
+      font-weight: 500 !important;
+    }
+    
+    .node-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 0.5rem;
+    }
+    .node-title {
+      font-family: var(--font-title);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .tech-badges {
+      display: flex;
+      gap: 0.4rem;
+    }
+    .tech-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      background: rgba(139, 92, 246, 0.1);
+      color: var(--color-accent);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .tech-badge.db {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--color-success);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    
+    .node-action {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 0.75rem;
+    }
+    .node-query {
+      background: #090d16;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.8rem;
+      color: #34d399;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+    .node-query span.comment {
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-backdrop"></div>
+  <div class="glow-backdrop-left"></div>
+
+  <div class="container">
+    <header>
+      <h1>📚 Platform System Architecture</h1>
+      <div class="system-stats" style="gap: 1rem;">
+        <a href="/static/system_design_specification.md" download="System_Design_Specification.md" class="btn" style="font-size: 0.8rem; padding: 0.5rem 1.25rem; text-decoration: none; background: var(--color-success); border-color: var(--color-success);">
+          📥 Download PRD/HLD/LLD
+        </a>
+        <a href="/" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 1rem; text-decoration: none;">
+          🔙 Go to Dashboard
+        </a>
+      </div>
+    </header>
+
+    <div class="docs-layout">
+      <!-- Sidebar Navigation -->
+      <nav class="panel docs-nav">
+        <div class="panel-title">Sections</div>
+        <a href="#overview" class="docs-nav-link active" id="nav-overview" onclick="showSection(event, 'overview')">Project Overview</a>
+        <a href="#flowchart" class="docs-nav-link" id="nav-flowchart" onclick="showSection(event, 'flowchart')">Interactive Flow Chart</a>
+        <a href="#tech" class="docs-nav-link" id="nav-tech" onclick="showSection(event, 'tech')">Technical Stack Details</a>
+      </nav>
+
+      <!-- Main Documentation Content -->
+      <main class="panel" style="gap: 2rem; min-height: 70vh;">
+        
+        <!-- PROJECT OVERVIEW SECTION -->
+        <div class="tab-pane active" id="sec-overview">
+          <div class="panel-title">📦 Project Overview</div>
+          <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">
+            This platform is an autonomous multi-agent pipeline designed to automate corporate sales development. 
+            It discovers prospects, compiles company reports using Web-scraped content and vector-based Playbook playbooks (RAG), qualifies leads, and drafts customized outreach copies.
+          </p>
+
+          <div class="lead-section-title">💡 Why We Use This Tech Stack</div>
+          <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2.5rem;">
+            
+            <div class="info-box" style="border-left: 3px solid var(--color-primary); background: rgba(59, 130, 246, 0.02); padding: 1.25rem;">
+              <strong style="color: var(--text-primary); font-size: 1rem; display: block; margin-bottom: 0.25rem;">🤝 CrewAI (Multi-Agent Cooperation)</strong>
+              <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.5rem;">
+                <strong>Why:</strong> CrewAI allows setting up collaborative, role-playing agents (Research, Qualify, Copywriter) that divide and conquer tasks. It models human team structures by giving each agent specific goals, backstories, and tools.
+              </div>
+              <div style="font-size: 0.85rem; color: var(--color-accent); font-family: monospace; padding-left: 0.5rem; border-left: 2px solid rgba(139, 92, 246, 0.3);">
+                💡 <em>Example:</em> The Research Agent retrieves news and writes a summary, which it then hands off directly to the Qualify Agent to calculate an Ideal Customer Profile score.
+              </div>
+            </div>
+
+            <div class="info-box" style="border-left: 3px solid var(--color-accent); background: rgba(139, 92, 246, 0.02); padding: 1.25rem;">
+              <strong style="color: var(--text-primary); font-size: 1rem; display: block; margin-bottom: 0.25rem;">🕸️ LangGraph & LangChain (Stateful Flow Control)</strong>
+              <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.5rem;">
+                <strong>Why:</strong> LangGraph manages complex, cyclical state machines and multi-step background tasks, ensuring execution order and tracking pipeline run state asynchronously. It provides built-in support for human-in-the-loop validation checkpoints.
+              </div>
+              <div style="font-size: 0.85rem; color: var(--color-accent); font-family: monospace; padding-left: 0.5rem; border-left: 2px solid rgba(139, 92, 246, 0.3);">
+                💡 <em>Example:</em> Once outreach drafts are generated, the graph transitions execution state to the "human_review" node and pauses, waiting for a manager's REST or WhatsApp approval to resume.
+              </div>
+            </div>
+
+            <div class="info-box" style="border-left: 3px solid var(--color-success); background: rgba(16, 185, 129, 0.02); padding: 1.25rem;">
+              <strong style="color: var(--text-primary); font-size: 1rem; display: block; margin-bottom: 0.25rem;">🔎 Milvus (Vector Database / RAG)</strong>
+              <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.5rem;">
+                <strong>Why:</strong> Milvus is a high-performance vector database that stores multi-dimensional embeddings of unstructured sales playbooks, case studies, and pitches. It performs rapid semantic searches to feed contextual relevance (RAG) into LLM prompts.
+              </div>
+              <div style="font-size: 0.85rem; color: var(--color-success); font-family: monospace; padding-left: 0.5rem; border-left: 2px solid rgba(16, 185, 129, 0.3);">
+                💡 <em>Example:</em> When pitching a "Robotics" company, the Copywriter agent queries Milvus to pull specific playbooks related to "Industrial Automation," avoiding generic email drafts.
+              </div>
+            </div>
+
+            <div class="info-box" style="border-left: 3px solid #f59e0b; background: rgba(245, 158, 11, 0.02); padding: 1.25rem;">
+              <strong style="color: var(--text-primary); font-size: 1rem; display: block; margin-bottom: 0.25rem;">🗄️ PostgreSQL (Relational Database / System of Record)</strong>
+              <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.5rem;">
+                <strong>Why:</strong> PostgreSQL serves as the relational database and single source of truth for structured data, tracking user logins (RBAC), prospect lead listings, generated messages, and workflow run histories.
+              </div>
+              <div style="font-size: 0.85rem; color: #f59e0b; font-family: monospace; padding-left: 0.5rem; border-left: 2px solid rgba(245, 158, 11, 0.3);">
+                💡 <em>Example:</em> The system queries PostgreSQL to populate the dashboard leads grid with structured fields like `company_name`, `score`, and `status`.
+              </div>
+            </div>
+
+          </div>
+
+          <div class="lead-section-title">⚙️ Platform Core Systems</div>
+          <div class="grid-cols-2">
+            <div class="info-box">
+              <div class="info-value" style="color: var(--color-primary)">LangGraph Orchestrator</div>
+              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem; line-height: 1.4;">Handles complex pipeline stages in the background, updating lead execution states asynchronously.</div>
+            </div>
+            <div class="info-box">
+              <div class="info-value" style="color: var(--color-primary)">Milvus RAG Seeding</div>
+              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem; line-height: 1.4;">Vectorizes and stores value propositions and objection handling techniques to ground the Copywriter LLM.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- INTERACTIVE FLOW CHART SECTION -->
+        <div class="tab-pane" id="sec-flowchart">
+          <div class="panel-title">🔄 Application Flow: Node Execution & Database Queries</div>
+          <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem;">
+            This interactive diagram displays the LangGraph nodes. Each node represents a pipeline execution step showing exactly which databases are queried, the commands run, and the active tech stack:
+          </p>
+
+          <div class="flowchart-container">
+            
+            <!-- Node 1: Discover -->
+            <div class="flow-node">
+              <div class="node-header">
+                <span class="node-title">1. discover_companies (Workflow Start)</span>
+                <div class="tech-badges">
+                  <span class="tech-badge">FastAPI</span>
+                  <span class="tech-badge db">PostgreSQL</span>
+                </div>
+              </div>
+              <div class="node-action">
+                Takes target industry criteria (e.g. "Robotics") and discovers matching company prospects, storing them as raw leads.
+              </div>
+              <div class="mermaid" style="margin-top: 0.75rem;">
+                graph LR
+                  Start([Target Industry Criteria]) --> Node[discover_companies Node]
+                  Node -->|SQL INSERT| DB[(PostgreSQL: leads table)]
+                  DB -->|Save lead status: 'discovered'| Next([Next Node])
+              </div>
+            </div>
+
+            <div class="flow-connector"></div>
+
+            <!-- Node 2: Research -->
+            <div class="flow-node">
+              <div class="node-header">
+                <span class="node-title">2. research_companies (RAG Enrichment)</span>
+                <div class="tech-badges">
+                  <span class="tech-badge">CrewAI Agent</span>
+                  <span class="tech-badge db">Milvus Vector DB</span>
+                  <span class="tech-badge db">PostgreSQL</span>
+                </div>
+              </div>
+              <div class="node-action">
+                Triggers the <strong>Company Intelligence Analyst Agent</strong>. Scrapes news and triggers a semantic vector search inside Milvus to retrieve relevant playbooks (RAG).
+              </div>
+              <div class="mermaid" style="margin-top: 0.75rem;">
+                graph TD
+                  Start([Input Lead]) --> Node[research_companies Node]
+                  Node -->|1. Scrape news & growth signals| News[Web Scraping Tool]
+                  Node -->|2. Semantic search using embeddings| Milvus[(Milvus: sales_playbooks)]
+                  Milvus -->|Retrieve matching playbooks| Node
+                  Node -->|3. Compile reports| Agent[CrewAI Research Agent]
+                  Agent -->|4. SQL INSERT| DB[(PostgreSQL: research_reports table)]
+                  DB -->|Save detailed report| Next([Next Node])
+              </div>
+            </div>
+
+            <div class="flow-connector"></div>
+
+            <!-- Node 3: Qualify -->
+            <div class="flow-node">
+              <div class="node-header">
+                <span class="node-title">3. qualify_companies (Ideal Customer Profile Scoring)</span>
+                <div class="tech-badges">
+                  <span class="tech-badge">CrewAI Agent</span>
+                  <span class="tech-badge db">PostgreSQL</span>
+                </div>
+              </div>
+              <div class="node-action">
+                Triggers the <strong>Sales Operations Analyst Agent</strong>. Compares the research report against the manager's target criteria and calculates an Ideal Customer Profile score.
+              </div>
+              <div class="mermaid" style="margin-top: 0.75rem;">
+                graph LR
+                  Start([Input Report]) --> Node[qualify_companies Node]
+                  Node -->|1. Ideal Customer Profile analysis| Agent[CrewAI Qualify Agent]
+                  Agent -->|2. SQL UPDATE| DB[(PostgreSQL: leads table)]
+                  DB -->|Set score & qualified status| Next([Next Node])
+              </div>
+            </div>
+
+            <div class="flow-connector"></div>
+
+            <!-- Node 4: Outreach -->
+            <div class="flow-node">
+              <div class="node-header">
+                <span class="node-title">4. generate_outreach (Copywriting)</span>
+                <div class="tech-badges">
+                  <span class="tech-badge">CrewAI Agent</span>
+                  <span class="tech-badge db">PostgreSQL</span>
+                </div>
+              </div>
+              <div class="node-action">
+                Triggers the <strong>Sales Copywriter Agent</strong>. Drafts a highly personalized outreach email and LinkedIn message referencing discovered growth signals and playbook value pitches.
+              </div>
+              <div class="mermaid" style="margin-top: 0.75rem;">
+                graph TD
+                  Start([Input Qualified Lead]) --> Node[generate_outreach Node]
+                  Node -->|1. Retrieve playbooks & reports| DB_PG[(PostgreSQL & Milvus)]
+                  Node -->|2. Copywriting| Agent[CrewAI Outreach Agent]
+                  Agent -->|3. SQL INSERT| DB_Msg[(PostgreSQL: outreach_messages table)]
+                  DB_Msg -->|Save draft email & LinkedIn copy| Next([Next Node])
+              </div>
+            </div>
+
+            <div class="flow-connector"></div>
+
+            <!-- Node 5: Human Review -->
+            <div class="flow-node">
+              <div class="node-header">
+                <span class="node-title">5. human_review (Approval Stage)</span>
+                <div class="tech-badges">
+                  <span class="tech-badge">FastAPI (UI/WhatsApp)</span>
+                  <span class="tech-badge db">PostgreSQL</span>
+                </div>
+              </div>
+              <div class="node-action">
+                Workflow pauses. A manager reviews, edits, and approves the drafts using the Web Dashboard or Meta WhatsApp chat.
+              </div>
+              <div class="mermaid" style="margin-top: 0.75rem;">
+                graph LR
+                  Start([Input Draft Copy]) --> Node[human_review Node]
+                  Node -->|1. Pause workflow| UI[FastAPI UI / WhatsApp webhook]
+                  UI -->|2. Edit & Approve| Node
+                  Node -->|3. SQL UPDATE| DB[(PostgreSQL: leads & messages)]
+                  DB -->|Set status: 'sent' & 'outreach_generated'| End([Workflow End])
+              </div>
+            </div>
+
+            <div class="flow-connector"></div>
+
+            <!-- Node 6: Observability -->
+            <div class="flow-node" style="border-color: rgba(59, 130, 246, 0.4);">
+              <div class="node-header">
+                <span class="node-title">6. Observability (LangSmith Tracing)</span>
+                <div class="tech-badges">
+                  <span class="tech-badge" style="background: rgba(59, 130, 246, 0.1); color: var(--color-primary); border-color: rgba(59, 130, 246, 0.2);">LangSmith</span>
+                </div>
+              </div>
+              <div class="node-action">
+                The entire execution (LLM prompts, costs, latencies, tool inputs) is automatically traced and logged to your LangSmith Dashboard.
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TECHNICAL STACK DETAILS SECTION -->
+        <div class="tab-pane" id="sec-tech">
+          <div class="panel-title">💻 Technical Stack Configuration</div>
+          <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">
+            Our services use the following asynchronous libraries, frameworks, and databases:
+          </p>
+
+          <div class="grid-cols-2">
+            <div class="info-box">
+              <div class="info-label">Web Framework & Server</div>
+              <div class="info-value">FastAPI, Uvicorn (ASGI)</div>
+            </div>
+            <div class="info-box">
+              <div class="info-label">Graph & Agent Frameworks</div>
+              <div class="info-value">LangGraph, CrewAI</div>
+            </div>
+            <div class="info-box">
+              <div class="info-label">Relational Database & ORM</div>
+              <div class="info-value">PostgreSQL (v15), SQLAlchemy 2.0 (Async), Alembic</div>
+            </div>
+            <div class="info-box">
+              <div class="info-label">Vector Database & Embeddings</div>
+              <div class="info-value">Milvus Standalone (v2.4), sentence-transformers (all-MiniLM-L6-v2)</div>
+            </div>
+            <div class="info-box">
+              <div class="info-label">Observability & Logs</div>
+              <div class="info-value">LangSmith Tracing</div>
+            </div>
+            <div class="info-box">
+              <div class="info-label">Frontend Layer</div>
+              <div class="info-value">Jinja2, Vanilla CSS, Vanilla Javascript</div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    function showSection(event, sectionId) {
+      if (event) event.preventDefault();
+      
+      const target = document.getElementById(`sec-${sectionId}`);
+      if (target) {
+        // Scroll target into view smoothly, with a slight offset
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      
+      // Update nav link active classes
+      document.querySelectorAll('.docs-nav-link').forEach(link => {
+        link.classList.toggle('active', link.id === `nav-${sectionId}`);
+      });
+    }
+
+    // Intersection Observer for scrollspy
+    document.addEventListener("DOMContentLoaded", () => {
+      const sections = document.querySelectorAll('.tab-pane');
+      const navLinks = document.querySelectorAll('.docs-nav-link');
+      
+      const observerOptions = {
+        root: null,
+        rootMargin: '-10% 0px -70% 0px',
+        threshold: 0
+      };
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id.replace('sec-', '');
+            navLinks.forEach(link => {
+              link.classList.toggle('active', link.id === `nav-${id}`);
+            });
+          }
+        });
+      }, observerOptions);
+      
+      sections.forEach(section => observer.observe(section));
+    });
+  </script>
+</body>
+</html>

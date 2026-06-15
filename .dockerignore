@@ -1,0 +1,37 @@
+# Ignore git files
+.git
+.gitignore
+.dockerignore
+
+# Ignore environment files
+.env
+.env.example
+
+# Ignore virtual environments
+venv/
+venv311/
+.venv/
+env/
+
+# Ignore python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore IDE configuration files
+.idea/
+.vscode/
+
+# Ignore test files and logs
+.pytest_cache/
+.coverage
+htmlcov/
+tests/
+*.log
+
+# Ignore OS-specific files
+.DS_Store
+
+# Ignore LangGraph build folder
+.langgraph_api/
